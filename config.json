@@ -1,0 +1,62 @@
+{
+  "business": {
+    "name": "Atlas Car",
+    "name_ar": "أطلس كار",
+    "tagline": "Atlas Car Rewards",
+    "tagline_ar": "برنامج ولاء أطلس كار",
+    "sector": "automotive",
+    "location": "Janzur, Tripoli",
+    "facebook": "اطلس كار لاستيراد السيارات",
+    "logo_file": "logo.jpg"
+  },
+  "card": {
+    "prefix": "AC",
+    "back_text_ar": "بطاقة ولاء أطلس كار تمنحك نقاط مع كل خدمة تحصل عليها في المركز\nاجمع النقاط واستبدلها بخدمات ومنتجات مجانية\nالبطاقة شخصية وغير قابلة للتحويل"
+  },
+  "branding": {
+    "primary_900": "#040E22",
+    "primary_800": "#071633",
+    "primary_700": "#0A1F47",
+    "primary_600": "#0F2D66",
+    "primary_500": "#1A4BA0",
+    "primary_400": "#4B7BE5",
+    "primary_100": "#C5D4FF",
+    "primary_50": "#EBF0FF",
+    "card_gradient": "linear-gradient(135deg, #040E22, #0A1F47 35%, #1A4BA0 70%, #0A1F47)",
+    "card_back_gradient": "linear-gradient(135deg, #0A1530, #040E22)"
+  },
+  "phone_validation": {
+    "pattern": "^09\\d{8}$",
+    "length": 10,
+    "placeholder": "09XXXXXXXX",
+    "error_message": "Valid Libyan number required (10 digits, starts with 09)"
+  },
+  "services": {
+    "basic_wash": { "name": "Basic Wash", "points": 1 },
+    "premium_wash": { "name": "Premium Wash / Detail", "points": 2 },
+    "oil_change": { "name": "Oil Change", "points": 2 },
+    "major_service": { "name": "Major Service / Repair", "points": 3 },
+    "bodykit": { "name": "Body Kit Purchase", "points": 3 },
+    "auction": { "name": "Auction Participation", "points": 2 },
+    "car_import": { "name": "Car Import Order", "points": 5 },
+    "ppf": { "name": "Protection Film / PPF", "points": 4 },
+    "cafe": { "name": "Café Purchase", "points": 1 },
+    "shine": { "name": "Shine / Polish", "points": 2 }
+  },
+  "rewards": {
+    "free_coffee": { "name": "Free Coffee", "points": 5 },
+    "air_freshener": { "name": "Air Freshener", "points": 8 },
+    "wiper_blade": { "name": "Wiper Blade", "points": 12 },
+    "discount_wash_20": { "name": "20% Off Wash", "points": 15 },
+    "interior_clean": { "name": "Interior Clean", "points": 25 },
+    "free_detail": { "name": "Free Detail Service", "points": 30 }
+  },
+  "admin": {
+    "default_username": "admin",
+    "default_password": "atlas2026"
+  },
+  "monitoring": {
+    "flag_secret": "atlas-monitor-2026",
+    "project_name": "Atlas Car Loyalty"
+  }
+}

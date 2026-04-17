@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Atlas Car — Staff Portal</title>
+<link rel="icon" href="/favicon.ico" type="image/x-icon">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ========================================
+   DESIGN TOKENS — Change these to rebrand
+   ======================================== */
+:root {
+  /* Brand */
+  --brand-50: #EBF0FF;
+  --brand-100: #C5D4FF;
+  --brand-400: #4B7BE5;
+  --brand-500: #1A4BA0;
+  --brand-600: #0F2D66;
+  --brand-700: #0A1F47;
+  --brand-800: #071633;
+  --brand-900: #040E22;
+
+  /* Surfaces — dark mode elevation */
+  --surface-0: #07090F;
+  --surface-1: #0D1117;
+  --surface-2: #151B25;
+  --surface-3: #1C2333;
+  --surface-4: #242D3D;
+
+  /* Text */
+  --text-primary: #E6EAF0;
+  --text-secondary: #8B95A8;
+  --text-tertiary: #525E72;
+  --text-inverse: #07090F;
+
+  /* Semantic */
+  --success: #34D399;
+  --success-dim: rgba(52,211,153,0.1);
+  --warning: #FBBF24;
+  --warning-dim: rgba(251,191,36,0.1);
+  --danger: #F87171;
+  --danger-dim: rgba(248,113,113,0.1);
+  --info: var(--brand-400);
+  --info-dim: rgba(75,123,229,0.1);
+
+  /* Borders */
+  --border-subtle: rgba(255,255,255,0.06);
+  --border-default: rgba(255,255,255,0.1);
+  --border-strong: rgba(255,255,255,0.16);
+
+  /* Spacing (8px base) */
+  --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px;
+  --sp-5: 20px; --sp-6: 24px; --sp-8: 32px; --sp-10: 40px;
+  --sp-12: 48px; --sp-16: 64px;
+
+  /* Radii */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-full: 9999px;
+
+  /* Typography */
+  --font-display: 'Outfit', sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+  --font-body: 'Outfit', sans-serif;
+
+  /* Transitions */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+
+  /* Sidebar */
+  --sidebar-w: 260px;
+}
+
+/* ========================================
+   RESET & BASE
+   ======================================== */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { font-family: var(--font-body); background: var(--surface-0); color: var(--text-primary); min-height: 100vh; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+input, select, textarea, button { font-family: inherit; }
+img { display: block; max-width: 100%; }
+
+/* ========================================
+   LOGIN
+   ======================================== */
+#login-screen {
+  min-height: 100vh; display: flex; align-items: center; justify-content: center;
+  background: var(--surface-0); position: relative;
+}
+#login-screen::before {
+  content: ''; position: absolute; top: -30%; left: -10%; width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(75,123,229,0.08), transparent 70%);
+  pointer-events: none;
+}
+#login-screen::after {
+  content: ''; position: absolute; bottom: -20%; right: -10%; width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(52,211,153,0.04), transparent 70%);
+  pointer-events: none;
+}
+.login-card {
+  width: 100%; max-width: 400px; margin: var(--sp-4);
+  background: var(--surface-1); border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl); padding: var(--sp-10);
+  position: relative; z-index: 1;
+  box-shadow: 0 0 0 1px var(--border-subtle), 0 24px 48px rgba(0,0,0,0.4);
+}
+.login-logo { width: 72px; height: 72px; object-fit: contain; margin: 0 auto var(--sp-4); filter: drop-shadow(0 4px 16px rgba(75,123,229,0.2)); }
+.login-title { font-family: var(--font-display); font-weight: 700; font-size: 22px; text-align: center; letter-spacing: -0.3px; }
+.login-sub { font-size: 14px; color: var(--text-secondary); text-align: center; margin-bottom: var(--sp-8); }
+.login-err { background: var(--danger-dim); color: var(--danger); padding: var(--sp-3) var(--sp-4); border-radius: var(--radius-sm); font-size: 13px; margin-bottom: var(--sp-4); display: none; border: 1px solid rgba(248,113,113,0.15); }
+
+/* ========================================
+   FORM ELEMENTS
+   ======================================== */
+.field { margin-bottom: var(--sp-4); }
+.field-label { display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: var(--sp-1); letter-spacing: 0.3px; }
+.field-input {
+  width: 100%; padding: var(--sp-3) var(--sp-4);
+  background: var(--surface-2); border: 1px solid var(--border-default);
+  border-radius: var(--radius-md); color: var(--text-primary); font-size: 14px;
+  outline: none; transition: border-color var(--duration-fast), box-shadow var(--duration-fast);
+}
+.field-input:focus { border-color: var(--brand-400); box-shadow: 0 0 0 3px rgba(75,123,229,0.15); }
+.field-input::placeholder { color: var(--text-tertiary); }
+select.field-input { cursor: pointer; }
+textarea.field-input { resize: vertical; line-height: 1.6; }
+
+/* ========================================
+   BUTTONS
+   ======================================== */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-5); border-radius: var(--radius-md);
+  font-family: var(--font-display); font-weight: 600; font-size: 14px;
+  border: none; cursor: pointer; transition: all var(--duration-fast) var(--ease-out);
+  white-space: nowrap;
+}
+.btn-primary { background: var(--brand-500); color: #fff; }
+.btn-primary:hover { background: var(--brand-400); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(75,123,229,0.25); }
+.btn-ghost { background: transparent; color: var(--text-secondary); border: 1px solid var(--border-default); }
+.btn-ghost:hover { background: var(--surface-3); color: var(--text-primary); border-color: var(--border-strong); }
+.btn-danger { background: var(--danger-dim); color: var(--danger); border: 1px solid rgba(248,113,113,0.15); }
+.btn-danger:hover { background: var(--danger); color: #fff; }
+.btn-success { background: var(--success); color: var(--text-inverse); }
+.btn-sm { padding: var(--sp-2) var(--sp-3); font-size: 12px; }
+.btn-full { width: 100%; }
+
+/* ========================================
+   APP LAYOUT
+   ======================================== */
+#app-screen { display: none; }
+
+/* Sidebar */
+.sidebar {
+  position: fixed; left: 0; top: 0; bottom: 0; width: var(--sidebar-w);
+  background: var(--surface-1); border-right: 1px solid var(--border-subtle);
+  display: flex; flex-direction: column; z-index: 50;
+  transition: transform var(--duration-normal) var(--ease-out);
+}
+.sidebar-header { padding: var(--sp-6) var(--sp-5); display: flex; align-items: center; gap: var(--sp-3); }
+.sidebar-header img { width: 36px; height: 36px; object-fit: contain; }
+.sidebar-header-text { font-family: var(--font-display); font-weight: 700; font-size: 16px; letter-spacing: -0.3px; }
+.sidebar-header-sub { font-size: 10px; color: var(--brand-400); font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; }
+
+.sidebar-nav { flex: 1; padding: var(--sp-2) var(--sp-3); display: flex; flex-direction: column; gap: 2px; }
+.nav-link {
+  display: flex; align-items: center; gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4); border-radius: var(--radius-md);
+  font-size: 13px; font-weight: 500; color: var(--text-secondary);
+  cursor: pointer; transition: all var(--duration-fast);
+  position: relative;
+}
+.nav-link:hover { background: var(--surface-2); color: var(--text-primary); }
+.nav-link.active { background: rgba(75,123,229,0.1); color: var(--brand-400); }
+.nav-link.active::before {
+  content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+  width: 3px; height: 20px; border-radius: 0 3px 3px 0; background: var(--brand-400);
+}
+.nav-link .nav-icon { width: 18px; text-align: center; font-size: 14px; flex-shrink: 0; }
+.nav-link .nav-badge {
+  margin-left: auto; background: var(--danger); color: #fff;
+  font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: var(--radius-full);
+  display: none;
+}
+
+.nav-divider { height: 1px; background: var(--border-subtle); margin: var(--sp-2) var(--sp-4); }
+
+.sidebar-footer { padding: var(--sp-4) var(--sp-5); border-top: 1px solid var(--border-subtle); }
+.sidebar-user { font-size: 13px; margin-bottom: var(--sp-3); }
+.sidebar-user strong { color: var(--text-primary); display: block; font-weight: 600; }
+.sidebar-user span { color: var(--text-tertiary); font-size: 11px; }
+.sidebar-actions { display: flex; gap: var(--sp-2); }
+
+/* Mobile menu */
+.mobile-header {
+  display: none; position: fixed; top: 0; left: 0; right: 0; z-index: 45;
+  height: 56px; background: var(--surface-1); border-bottom: 1px solid var(--border-subtle);
+  padding: 0 var(--sp-4); align-items: center; gap: var(--sp-3);
+}
+.mobile-header img { width: 28px; height: 28px; object-fit: contain; }
+.mobile-header-title { font-family: var(--font-display); font-weight: 700; font-size: 15px; }
+.menu-toggle {
+  width: 36px; height: 36px; border-radius: var(--radius-md); background: var(--surface-2);
+  border: 1px solid var(--border-default); display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 16px; color: var(--text-secondary); margin-left: auto;
+}
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 49; backdrop-filter: blur(4px); }
+.sidebar-overlay.open { display: block; }
+
+@media (max-width: 900px) {
+  .mobile-header { display: flex; }
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.open { transform: translateX(0); }
+  .main { margin-left: 0 !important; padding-top: 72px !important; }
+}
+
+/* Main content */
+.main { margin-left: var(--sidebar-w); padding: var(--sp-8); min-height: 100vh; }
+
+/* ========================================
+   PAGES
+   ======================================== */
+.page { display: none; animation: pageIn 0.3s var(--ease-out); }
+.page.active { display: block; }
+@keyframes pageIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+.page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--sp-6); flex-wrap: wrap; gap: var(--sp-4); }
+.page-title { font-family: var(--font-display); font-weight: 700; font-size: 24px; letter-spacing: -0.5px; }
+.page-desc { font-size: 14px; color: var(--text-secondary); margin-top: var(--sp-1); }
+
+/* ========================================
+   STAT CARDS — SaaS analytics style
+   ======================================== */
+.stats-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--sp-4); margin-bottom: var(--sp-6);
+}
+.stat-card {
+  background: var(--surface-1); border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg); padding: var(--sp-5);
+  transition: border-color var(--duration-fast);
+}
+.stat-card:hover { border-color: var(--border-strong); }
+.stat-label { font-size: 12px; color: var(--text-tertiary); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: var(--sp-2); }
+.stat-value { font-family: var(--font-display); font-weight: 700; font-size: 32px; letter-spacing: -1px; line-height: 1; }
+.stat-value.blue { color: var(--brand-400); }
+.stat-value.green { color: var(--success); }
+.stat-value.gold { color: var(--warning); }
+
+/* ========================================
+   CARDS & PANELS
+   ======================================== */
+.card {
+  background: var(--surface-1); border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg); padding: var(--sp-6);
+  margin-bottom: var(--sp-5);
+}
+.card-title { font-family: var(--font-display); font-weight: 600; font-size: 15px; margin-bottom: var(--sp-4); display: flex; align-items: center; gap: var(--sp-2); }
+.card-title .card-icon { font-size: 14px; }
+
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-5); }
+@media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
+
+/* ========================================
+   TABLE
+   ======================================== */
+table { width: 100%; border-collapse: separate; border-spacing: 0; }
+th { font-size: 11px; font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.5px; text-align: left; padding: var(--sp-3) var(--sp-4); border-bottom: 1px solid var(--border-subtle); }
+td { padding: var(--sp-3) var(--sp-4); font-size: 13px; border-bottom: 1px solid var(--border-subtle); transition: background var(--duration-fast); }
+tr:hover td { background: var(--surface-2); }
+
+/* ========================================
+   SCAN AREA
+   ======================================== */
+.scan-zone {
+  background: var(--surface-2); border: 2px dashed var(--border-default);
+  border-radius: var(--radius-lg); padding: var(--sp-6); text-align: center;
+  transition: all var(--duration-normal);
+}
+.scan-zone.active { border-color: var(--brand-400); background: var(--info-dim); }
+.scan-zone.done { border-color: var(--success); background: var(--success-dim); }
+.scan-field {
+  width: 100%; max-width: 320px; margin: 0 auto; padding: var(--sp-3) var(--sp-4);
+  background: var(--surface-0); border: 1px solid var(--border-default);
+  border-radius: var(--radius-md); color: var(--text-primary);
+  font-family: var(--font-mono); font-size: 15px; text-align: center;
+  letter-spacing: 1px; outline: none; transition: border-color var(--duration-fast);
+}
+.scan-field:focus { border-color: var(--brand-400); }
+.scan-hint { font-size: 12px; color: var(--text-tertiary); margin-top: var(--sp-3); }
+.cam-btn { margin-top: var(--sp-3); }
+.cam-view { display: none; margin-top: var(--sp-4); border-radius: var(--radius-md); overflow: hidden; }
+
+/* ========================================
+   MEMBER RESULT CARD
+   ======================================== */
+.member-card { background: var(--surface-2); border: 1px solid var(--border-default); border-radius: var(--radius-lg); padding: var(--sp-5); display: none; margin-top: var(--sp-4); animation: slideIn 0.3s var(--ease-out); }
+.member-card.show { display: block; }
+@keyframes slideIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.member-name { font-family: var(--font-display); font-weight: 700; font-size: 18px; }
+.member-id { font-family: var(--font-mono); font-size: 12px; color: var(--text-tertiary); margin-top: 2px; }
+.member-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-3); margin-top: var(--sp-4); }
+.member-stat { text-align: center; padding: var(--sp-3); background: var(--surface-0); border-radius: var(--radius-md); }
+.member-stat-value { font-family: var(--font-display); font-weight: 700; font-size: 20px; color: var(--brand-400); }
+.member-stat-label { font-size: 10px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+
+/* ========================================
+   SERVICE SELECTOR
+   ======================================== */
+.service-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: var(--sp-2); margin-top: var(--sp-3); }
+.service-chip {
+  padding: var(--sp-3); background: var(--surface-2); border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md); cursor: pointer; transition: all var(--duration-fast);
+  font-size: 12px; font-weight: 500;
+}
+.service-chip:hover { border-color: var(--brand-400); }
+.service-chip.selected { border-color: var(--brand-400); background: var(--info-dim); color: var(--brand-400); }
+.service-chip .chip-pts { font-family: var(--font-mono); font-size: 11px; color: var(--brand-400); margin-top: 2px; display: block; }
+
+/* ========================================
+   REWARD CARDS
+   ======================================== */
+.reward-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: var(--sp-3); }
+.reward-card {
+  padding: var(--sp-4); background: var(--surface-2); border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg); cursor: pointer; transition: all var(--duration-fast);
+}
+.reward-card:hover { border-color: var(--brand-400); transform: translateY(-2px); }
+.reward-card.disabled { opacity: 0.3; cursor: not-allowed; transform: none !important; }
+.reward-pts { font-family: var(--font-display); font-weight: 800; font-size: 24px; color: var(--brand-400); }
+.reward-pts small { font-size: 11px; font-weight: 600; opacity: 0.6; }
+.reward-name { font-size: 13px; font-weight: 500; margin-top: var(--sp-1); }
+
+/* ========================================
+   LOYALTY CARD PREVIEW
+   ======================================== */
+.card-preview-wrap { display: flex; gap: var(--sp-5); justify-content: center; flex-wrap: wrap; margin: var(--sp-4) 0; }
+.card-preview-label { font-size: 11px; color: var(--text-tertiary); text-align: center; margin-bottom: var(--sp-2); font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
+.loyalty-card { width: 340px; height: 214px; border-radius: var(--radius-lg); overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.3), 0 0 0 1px var(--border-subtle); flex-shrink: 0; }
+
+/* Card front */
+.lc-front {
+  width: 100%; height: 100%; padding: 18px 22px;
+  background: linear-gradient(135deg, var(--brand-900), var(--brand-700) 35%, var(--brand-500) 70%, var(--brand-700));
+  display: flex; flex-direction: column; justify-content: space-between;
+  color: #fff; position: relative; overflow: hidden;
+}
+.lc-front::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 250px 180px at 85% 15%, rgba(255,255,255,0.06), transparent); }
+.lc-front > * { position: relative; z-index: 1; }
+.lc-top { display: flex; justify-content: space-between; align-items: flex-start; }
+.lc-tag { font-size: 7px; letter-spacing: 2.5px; text-transform: uppercase; color: rgba(255,255,255,0.45); font-weight: 600; }
+.lc-brand { font-family: var(--font-display); font-weight: 700; font-size: 14px; }
+.lc-brand-ar { font-size: 10px; color: rgba(255,255,255,0.4); }
+.lc-logo { width: 52px; height: 52px; position: relative; }
+.lc-logo::before { content: ''; position: absolute; inset: -4px; border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,0.12), transparent 70%); }
+.lc-logo img { width: 48px; height: 48px; object-fit: contain; position: relative; opacity: 0.85; }
+.lc-name { font-family: var(--font-display); font-weight: 600; font-size: 15px; margin-bottom: var(--sp-3); }
+.lc-bottom { display: flex; align-items: flex-end; gap: 14px; }
+.lc-qr { width: 48px; height: 48px; background: #fff; border-radius: 5px; padding: 3px; flex-shrink: 0; }
+.lc-qr img { width: 100%; height: 100%; }
+.lc-id { font-family: var(--font-mono); font-size: 10px; color: rgba(255,255,255,0.45); letter-spacing: 1.5px; }
+
+/* Card back */
+.lc-back {
+  width: 100%; height: 100%; padding: 20px 22px;
+  background: linear-gradient(135deg, #0A1530, var(--brand-900));
+  display: flex; flex-direction: column; justify-content: space-between; color: #fff;
+}
+.lc-back-text { font-size: 9px; color: rgba(255,255,255,0.4); text-align: center; line-height: 1.7; direction: rtl; }
+.lc-back-info { display: flex; flex-direction: column; gap: 6px; }
+.lc-back-row { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 10px; color: rgba(255,255,255,0.65); }
+.lc-back-row svg { width: 13px; height: 13px; flex-shrink: 0; opacity: 0.7; }
+.lc-back-brand { font-family: var(--font-display); font-weight: 700; font-size: 11px; text-align: center; color: rgba(255,255,255,0.25); letter-spacing: 2px; margin-top: var(--sp-2); }
+
+/* ========================================
+   ACTIVITY FEED
+   ======================================== */
+.feed-item {
+  display: flex; align-items: center; gap: var(--sp-3);
+  padding: var(--sp-3) 0; border-bottom: 1px solid var(--border-subtle);
+  transition: background var(--duration-fast);
+}
+.feed-item:last-child { border-bottom: none; }
+.feed-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.feed-info { flex: 1; min-width: 0; }
+.feed-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.feed-detail { font-size: 11px; color: var(--text-tertiary); }
+.feed-pts { font-family: var(--font-mono); font-size: 12px; font-weight: 600; color: var(--success); flex-shrink: 0; }
+
+.dot-basic_wash,.dot-premium_wash{background:#60A5FA}.dot-oil_change,.dot-major_service{background:#FBBF24}
+.dot-bodykit{background:#F87171}.dot-auction,.dot-car_import{background:#A78BFA}.dot-ppf,.dot-shine{background:#34D399}.dot-cafe{background:#F59E0B}
+
+/* ========================================
+   FLAG ITEMS
+   ======================================== */
+.flag-item {
+  background: var(--surface-2); border-radius: var(--radius-lg); padding: var(--sp-5);
+  margin-bottom: var(--sp-3); border-left: 3px solid var(--danger);
+}
+.flag-item.resolved { border-left-color: var(--success); }
+.flag-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--sp-2); }
+.flag-cat { font-size: 12px; font-weight: 600; }
+.flag-status { font-size: 11px; padding: 2px 8px; border-radius: var(--radius-full); font-weight: 600; }
+.flag-status.open { background: var(--danger-dim); color: var(--danger); }
+.flag-status.resolved { background: var(--success-dim); color: var(--success); }
+.flag-comment { font-size: 13px; margin-bottom: var(--sp-2); }
+.flag-meta { font-size: 11px; color: var(--text-tertiary); }
+.flag-resolve-note { font-size: 11px; color: var(--success); margin-top: var(--sp-2); padding-top: var(--sp-2); border-top: 1px solid var(--border-subtle); }
+
+/* ========================================
+   SEARCH
+   ======================================== */
+.search-wrap { position: relative; max-width: 320px; }
+.search-wrap input { width: 100%; padding: var(--sp-2) var(--sp-4) var(--sp-2) 36px; background: var(--surface-2); border: 1px solid var(--border-default); border-radius: var(--radius-md); color: var(--text-primary); font-size: 13px; outline: none; }
+.search-wrap input:focus { border-color: var(--brand-400); }
+.search-wrap::before { content: '🔍'; position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 12px; }
+
+/* ========================================
+   MODALS
+   ======================================== */
+.modal-bg {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+  display: none; align-items: center; justify-content: center;
+  z-index: 100; backdrop-filter: blur(8px);
+}
+.modal-bg.show { display: flex; }
+.modal-box {
+  background: var(--surface-1); border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl); padding: var(--sp-8);
+  width: 440px; max-width: 92vw;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.5); animation: slideIn 0.3s var(--ease-out);
+}
+.modal-title { font-family: var(--font-display); font-weight: 700; font-size: 18px; margin-bottom: var(--sp-5); }
+.modal-actions { display: flex; gap: var(--sp-3); margin-top: var(--sp-5); }
+
+/* ========================================
+   TOAST
+   ======================================== */
+.toast {
+  position: fixed; bottom: var(--sp-6); right: var(--sp-6);
+  padding: var(--sp-3) var(--sp-5); border-radius: var(--radius-md);
+  font-weight: 600; font-size: 13px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  transform: translateY(100px); opacity: 0;
+  transition: all 0.4s var(--ease-out); z-index: 200;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.success { background: var(--success); color: var(--text-inverse); }
+.toast.error { background: var(--danger); color: #fff; }
+.toast.info { background: var(--brand-500); color: #fff; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+<div class="login-card">
+<img src="/logo.jpg" class="login-logo" alt="">
+<div class="login-title" data-cfg="business.name">Atlas Car</div>
+<div class="login-sub">Staff Portal</div>
+<div class="login-err" id="loginError"></div>
+<div class="field"><label class="field-label">Username</label><input class="field-input" id="loginUser" placeholder="Enter username"></div>
+<div class="field"><label class="field-label">Password</label><input class="field-input" id="loginPass" type="password" placeholder="Enter password"></div>
+<button class="btn btn-primary btn-full" onclick="doLogin()" style="margin-top:var(--sp-2)">Sign In</button>
+</div></div>
+
+<!-- APP -->
+<div id="app-screen">
+<!-- Mobile header -->
+<div class="mobile-header">
+<img src="/logo.jpg" alt=""><div class="mobile-header-title" data-cfg="business.name">Atlas Car</div>
+<div class="menu-toggle" onclick="toggleSidebar()">☰</div>
+</div>
+<div class="sidebar-overlay" id="sbOverlay" onclick="toggleSidebar()"></div>
+
+<!-- Sidebar -->
+<aside class="sidebar" id="sidebarEl">
+<div class="sidebar-header"><img src="/logo.jpg" alt=""><div><div class="sidebar-header-text" data-cfg="business.name">Atlas Car</div><div class="sidebar-header-sub">Staff Portal</div></div></div>
+<div class="sidebar-nav">
+<div class="nav-link active" data-page="dashboard"><span class="nav-icon">📊</span>Dashboard</div>
+<div class="nav-link" data-page="scan"><span class="nav-icon">📷</span>Scan Card</div>
+<div class="nav-link" data-page="register"><span class="nav-icon">➕</span>Register Member</div>
+<div class="nav-link" data-page="members"><span class="nav-icon">👥</span>All Members</div>
+<div class="nav-link" data-page="redeem"><span class="nav-icon">🎁</span>Redeem Rewards</div>
+<div class="nav-divider"></div>
+<div class="nav-link admin-only" data-page="staff"><span class="nav-icon">🔑</span>Manage Staff</div>
+<div class="nav-link admin-only" data-page="flags"><span class="nav-icon">🚩</span>Flags<span class="nav-badge" id="flagBadge"></span></div>
+</div>
+<div style="padding:var(--sp-2) var(--sp-3)"><button class="btn btn-danger btn-sm btn-full" onclick="openFlag()">🚩 Report Issue</button></div>
+<div class="sidebar-footer">
+<div class="sidebar-user"><strong id="uName">—</strong><span id="uRole">—</span></div>
+<div class="sidebar-actions">
+<button class="btn btn-ghost btn-sm" style="flex:1" onclick="showModal('pwModal')">Password</button>
+<button class="btn btn-ghost btn-sm" style="flex:1" onclick="doLogout()">Sign Out</button>
+</div></div>
+</aside>
+
+<!-- Main -->
+<div class="main">
+
+<!-- DASHBOARD -->
+<div class="page active" id="page-dashboard">
+<div class="page-header"><div><div class="page-title">Dashboard</div><div class="page-desc">Today's overview at a glance</div></div><button class="btn btn-ghost btn-sm" onclick="loadStats()">Refresh</button></div>
+<div class="stats-grid">
+<div class="stat-card"><div class="stat-label">Total Members</div><div class="stat-value blue" id="sM">—</div></div>
+<div class="stat-card"><div class="stat-label">Scans Today</div><div class="stat-value" id="sS">—</div></div>
+<div class="stat-card"><div class="stat-label">New Today</div><div class="stat-value gold" id="sN">—</div></div>
+<div class="stat-card"><div class="stat-label">Redeemed</div><div class="stat-value" id="sR">—</div></div>
+<div class="stat-card"><div class="stat-label">Return Rate</div><div class="stat-value green" id="sRt">—</div></div>
+</div>
+<div class="card"><div class="card-title"><span class="card-icon">⚡</span>Recent Activity</div><div id="rAct"><div style="color:var(--text-tertiary);font-size:13px">No activity yet.</div></div></div>
+</div>
+
+<!-- SCAN -->
+<div class="page" id="page-scan">
+<div class="page-header"><div><div class="page-title">Scan Card</div><div class="page-desc">Scan a member's QR code to log a service</div></div></div>
+<div class="two-col">
+<div class="card">
+<div class="card-title"><span class="card-icon">1️⃣</span>Scan or Enter ID</div>
+<div class="scan-zone" id="scanBox"><input class="scan-field" id="scanInput" placeholder="Type ID or scan..."><div class="scan-hint">Type the member ID and press Enter, or use camera</div></div>
+<div style="text-align:center" class="cam-btn"><button class="btn btn-primary btn-sm" onclick="startCam('scan')" id="camBtnScan">📷 Open Camera</button></div>
+<div id="camScan" class="cam-view"></div>
+<div class="member-card" id="sMC"><div class="member-name" id="sMN">—</div><div class="member-id" id="sMI">—</div>
+<div class="member-stats"><div class="member-stat"><div class="member-stat-value" id="sPt">0</div><div class="member-stat-label">Available</div></div><div class="member-stat"><div class="member-stat-value" id="sVi">0</div><div class="member-stat-label">Visits</div></div><div class="member-stat"><div class="member-stat-value" id="sTt">0</div><div class="member-stat-label">Total</div></div></div></div>
+</div>
+<div class="card">
+<div class="card-title"><span class="card-icon">2️⃣</span>Select Service</div>
+<div class="service-grid" id="svcGrid"></div>
+<button class="btn btn-primary btn-full" style="margin-top:var(--sp-4)" id="scanBtn" onclick="submitScan()" disabled>Add Points</button>
+</div></div></div>
+
+<!-- REGISTER -->
+<div class="page" id="page-register">
+<div class="page-header"><div><div class="page-title">Register Member</div><div class="page-desc">Create a loyalty card for a new customer</div></div></div>
+<div class="two-col">
+<div class="card">
+<div class="card-title"><span class="card-icon">📝</span>Customer Details</div>
+<div class="field"><label class="field-label">Full Name</label><input class="field-input" id="regName" placeholder="e.g. Muhammad Ali"></div>
+<div class="field"><label class="field-label">Phone Number</label><input class="field-input" id="regPhone" placeholder="09XXXXXXXX" maxlength="10"></div>
+<button class="btn btn-primary btn-full" onclick="regMember()">Register &amp; Generate Card</button>
+</div>
+<div class="card" id="regResult" style="display:none">
+<div class="card-title"><span class="card-icon">🎉</span>Card Ready</div>
+<div id="printPrev"></div>
+<div style="display:flex;gap:var(--sp-3);margin-top:var(--sp-4)"><button class="btn btn-primary btn-full" onclick="printCard()">Print Card</button><button class="btn btn-ghost btn-full" onclick="resetReg()">Register Another</button></div>
+</div></div></div>
+
+<!-- MEMBERS -->
+<div class="page" id="page-members">
+<div class="page-header"><div><div class="page-title">All Members</div><div class="page-desc" id="mCount">—</div></div><div class="search-wrap"><input placeholder="Search..." id="mSearch" oninput="searchM()"></div></div>
+<div class="card" style="overflow-x:auto"><table><thead><tr><th>ID</th><th>Name</th><th>Phone</th><th>Points</th><th>Visits</th><th>Last Visit</th><th></th></tr></thead><tbody id="mTbl"></tbody></table></div>
+</div>
+
+<!-- REDEEM -->
+<div class="page" id="page-redeem">
+<div class="page-header"><div><div class="page-title">Redeem Rewards</div><div class="page-desc">Scan card, then select reward</div></div></div>
+<div class="two-col">
+<div class="card">
+<div class="card-title"><span class="card-icon">1️⃣</span>Scan Member</div>
+<div class="scan-zone"><input class="scan-field" id="rdInput" placeholder="Type ID or scan..."><div class="scan-hint">Type ID and press Enter, or use camera</div></div>
+<div style="text-align:center" class="cam-btn"><button class="btn btn-primary btn-sm" onclick="startCam('redeem')" id="camBtnRedeem">📷 Open Camera</button></div>
+<div id="camRedeem" class="cam-view"></div>
+<div class="member-card" id="rMC"><div class="member-name" id="rMN">—</div><div class="member-id" id="rMI">—</div>
+<div class="member-stats"><div class="member-stat"><div class="member-stat-value" id="rPt">0</div><div class="member-stat-label">Available</div></div><div class="member-stat"><div class="member-stat-value" id="rTt">0</div><div class="member-stat-label">Earned</div></div><div class="member-stat"><div class="member-stat-value" id="rSp">0</div><div class="member-stat-label">Spent</div></div></div></div>
+</div>
+<div class="card"><div class="card-title"><span class="card-icon">2️⃣</span>Select Reward</div><div class="reward-grid" id="rwGrid"></div></div>
+</div></div>
+
+<!-- STAFF -->
+<div class="page" id="page-staff">
+<div class="page-header"><div><div class="page-title">Manage Staff</div><div class="page-desc">Add or remove accounts</div></div><button class="btn btn-primary btn-sm" onclick="showModal('addStaffModal')">+ Add Staff</button></div>
+<div class="card" style="overflow-x:auto"><table><thead><tr><th>Username</th><th>Full Name</th><th>Role</th><th>Created</th><th></th></tr></thead><tbody id="stTbl"></tbody></table></div>
+</div>
+
+<!-- FLAGS -->
+<div class="page" id="page-flags">
+<div class="page-header"><div><div class="page-title">Flags</div><div class="page-desc">Issues reported by staff</div></div></div>
+<div id="flagsList"></div>
+</div>
+
+</div>
+</div>
+
+<!-- MODALS -->
+<div class="modal-bg" id="addStaffModal"><div class="modal-box"><div class="modal-title">Add Staff Account</div>
+<div class="field"><label class="field-label">Full Name</label><input class="field-input" id="stFN"></div>
+<div class="field"><label class="field-label">Username</label><input class="field-input" id="stUN"></div>
+<div class="field"><label class="field-label">Password</label><input class="field-input" id="stPW" type="password"></div>
+<div class="modal-actions"><button class="btn btn-primary" onclick="addStaff()">Create</button><button class="btn btn-ghost" onclick="closeModal('addStaffModal')">Cancel</button></div></div></div>
+
+<div class="modal-bg" id="pwModal"><div class="modal-box"><div class="modal-title">Change Password</div>
+<div class="field"><label class="field-label">Current Password</label><input class="field-input" id="cpw" type="password"></div>
+<div class="field"><label class="field-label">New Password</label><input class="field-input" id="npw" type="password"></div>
+<div class="field"><label class="field-label">Confirm</label><input class="field-input" id="cpw2" type="password"></div>
+<div class="modal-actions"><button class="btn btn-primary" onclick="chgPw()">Update</button><button class="btn btn-ghost" onclick="closeModal('pwModal')">Cancel</button></div></div></div>
+
+<div class="modal-bg" id="detailModal"><div class="modal-box" style="max-width:520px"><div class="modal-title" id="dTitle">Member</div><div id="dContent"></div>
+<div class="modal-actions"><button class="btn btn-primary btn-sm" id="dPrint">Print Card</button><button class="btn btn-danger btn-sm" id="dDel">Delete Member</button><button class="btn btn-ghost btn-sm" onclick="closeModal('detailModal')">Close</button></div></div></div>
+
+<div class="modal-bg" id="flagModal"><div class="modal-box"><div class="modal-title" style="color:var(--danger)">🚩 Report an Issue</div>
+<div class="field"><label class="field-label">Category</label><select class="field-input" id="flagCat"><option value="">— Select —</option><option value="Scanner Issue">Scanner Issue</option><option value="Printer Issue">Printer Issue</option><option value="Customer Dispute">Customer Dispute</option><option value="System Error">System Error</option><option value="Other">Other</option></select></div>
+<div class="field"><label class="field-label">Describe the issue</label><textarea class="field-input" id="flagComment" rows="4" placeholder="What happened?"></textarea></div>
+<div style="font-size:11px;color:var(--text-tertiary)">Your name and current page are recorded automatically.</div>
+<div class="modal-actions"><button class="btn btn-danger" onclick="submitFlag()">Submit Flag</button><button class="btn btn-ghost" onclick="closeModal('flagModal')">Cancel</button></div></div></div>
+
+<div class="modal-bg" id="resolveModal"><div class="modal-box"><div class="modal-title">Resolve Flag</div>
+<div class="field"><label class="field-label">Resolution note</label><textarea class="field-input" id="resolveNote" rows="3" placeholder="What was done to fix this..."></textarea></div>
+<div class="modal-actions"><button class="btn btn-primary" onclick="confirmResolve()">Mark Resolved</button><button class="btn btn-ghost" onclick="closeModal('resolveModal')">Cancel</button></div></div></div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+<script>
+var cu=null,svcs={},rws={},selSvc=null,scanM=null,rdM=null,currentPage='dashboard';
+var camScanners={};
+var CFG=null;
+
+// Load business config from server and apply to page
+async function loadConfig(){
+try{
+var r=await fetch('/api/config');
+CFG=await r.json();
+// Update page title
+document.title=CFG.business.name+' — Staff Portal';
+// Update all elements with data-cfg attributes
+document.querySelectorAll('[data-cfg]').forEach(function(el){
+var key=el.getAttribute('data-cfg');
+var parts=key.split('.');
+var val=CFG;
+for(var i=0;i<parts.length;i++){if(val)val=val[parts[i]];}
+if(val)el.textContent=val;
+});
+// Update phone placeholder
+var phoneInput=document.getElementById('regPhone');
+if(phoneInput&&CFG.phone_validation){phoneInput.placeholder=CFG.phone_validation.placeholder;phoneInput.maxLength=CFG.phone_validation.length}
+// Apply brand colors as CSS variables
+if(CFG.branding){
+var s=document.documentElement.style;
+s.setProperty('--brand-900',CFG.branding.primary_900);
+s.setProperty('--brand-800',CFG.branding.primary_800);
+s.setProperty('--brand-700',CFG.branding.primary_700);
+s.setProperty('--brand-600',CFG.branding.primary_600);
+s.setProperty('--brand-500',CFG.branding.primary_500);
+s.setProperty('--brand-400',CFG.branding.primary_400);
+s.setProperty('--brand-100',CFG.branding.primary_100);
+s.setProperty('--brand-50',CFG.branding.primary_50);
+}
+}catch(e){console.error('Config load failed:',e)}
+}
+loadConfig();
+
+function startCam(mode){
+var elId='cam'+mode.charAt(0).toUpperCase()+mode.slice(1);
+var el=document.getElementById(elId);
+var btnId=mode==='scan'?'camBtnScan':'camBtnRedeem';
+if(camScanners[mode]){stopCam(mode);return}
+el.style.display='block';el.style.minHeight='280px';
+document.getElementById(btnId).textContent='Stop Camera';
+document.getElementById(btnId).style.background='var(--danger)';
+var scanner=new Html5Qrcode(elId);
+camScanners[mode]=scanner;
+var qrSize=Math.min(el.offsetWidth-40,200);if(qrSize<100)qrSize=150;
+scanner.start({facingMode:'environment'},{fps:15,qrbox:qrSize,aspectRatio:1,disableFlip:false},
+function(text){scanner.stop().then(function(){el.style.display='none';el.style.minHeight='0';document.getElementById(btnId).textContent='📷 Open Camera';document.getElementById(btnId).style.background='';delete camScanners[mode]});
+if(mode==='scan'){document.getElementById('scanInput').value=text;lkScan(text)}else{document.getElementById('rdInput').value=text;lkRd(text)}toast('QR scanned','success')},
+function(){}).catch(function(){el.style.display='none';el.style.minHeight='0';document.getElementById(btnId).textContent='📷 Open Camera';document.getElementById(btnId).style.background='';toast('Camera not available','error')})}
+function stopCam(mode){var elId='cam'+mode.charAt(0).toUpperCase()+mode.slice(1);var btnId=mode==='scan'?'camBtnScan':'camBtnRedeem';if(camScanners[mode]){camScanners[mode].stop().then(function(){document.getElementById(elId).style.display='none';document.getElementById(elId).style.minHeight='0';document.getElementById(btnId).textContent='📷 Open Camera';document.getElementById(btnId).style.background='';delete camScanners[mode]}).catch(function(){delete camScanners[mode]})}}
+
+var $=function(id){return document.getElementById(id)};
+var A=async function(u,o){o=o||{};var r=await fetch(u,{headers:{'Content-Type':'application/json'},...o,body:o.body?JSON.stringify(o.body):undefined});var d=await r.json();if(!r.ok)throw new Error(d.error||'Failed');return d};
+function toast(m,t){var e=$('toast');e.textContent=m;e.className='toast '+(t||'success')+' show';setTimeout(function(){e.classList.remove('show')},3500)}
+function showModal(i){$(i).classList.add('show')}function closeModal(i){$(i).classList.remove('show')}
+document.querySelectorAll('.modal-bg').forEach(function(o){o.addEventListener('click',function(e){if(e.target===o)o.classList.remove('show')})});
+function toggleSidebar(){$('sidebarEl').classList.toggle('open');$('sbOverlay').classList.toggle('open')}
+
+async function doLogin(){var u=$('loginUser').value.trim(),p=$('loginPass').value,e=$('loginError');if(!u||!p){e.textContent='Enter both fields';e.style.display='block';return}try{var d=await A('/api/login',{method:'POST',body:{username:u,password:p}});cu=d.user;e.style.display='none';showApp()}catch(x){e.textContent=x.message;e.style.display='block'}}
+async function doLogout(){await A('/api/logout',{method:'POST'});cu=null;$('app-screen').style.display='none';$('login-screen').style.display='flex'}
+async function checkAuth(){try{var d=await A('/api/me');cu=d.user;showApp()}catch(e){}}
+function showApp(){$('login-screen').style.display='none';$('app-screen').style.display='block';$('uName').textContent=cu.full_name;$('uRole').textContent=cu.role==='admin'?'Administrator':'Staff';document.querySelectorAll('.admin-only').forEach(function(e){e.style.display=cu.role==='admin'?'':'none'});loadSvcs();loadRws();loadStats();updateFlagBadge()}
+
+async function chgPw(){var c=$('cpw').value,n=$('npw').value,c2=$('cpw2').value;if(!c||!n){toast('Fill all fields','error');return}if(n!==c2){toast("Passwords don't match",'error');return}try{await A('/api/change-password',{method:'POST',body:{current_password:c,new_password:n}});toast('Password updated');closeModal('pwModal')}catch(e){toast(e.message,'error')}}
+
+document.querySelectorAll('.nav-link').forEach(function(i){i.addEventListener('click',function(){var p=i.dataset.page;if(!p)return;currentPage=p;document.querySelectorAll('.nav-link').forEach(function(n){n.classList.remove('active')});document.querySelectorAll('.page').forEach(function(pg){pg.classList.remove('active')});i.classList.add('active');$('page-'+p).classList.add('active');if(p==='dashboard')loadStats();if(p==='members')loadMbrs();if(p==='staff')loadStaff();if(p==='flags')loadFlags();if(p==='scan')$('scanInput').focus();if(p==='redeem')$('rdInput').focus();$('sidebarEl').classList.remove('open');$('sbOverlay').classList.remove('open')})});
+
+async function loadSvcs(){svcs=await A('/api/services');var g=$('svcGrid');g.innerHTML='';for(var k in svcs){(function(key,svc){var b=document.createElement('div');b.className='service-chip';b.innerHTML=svc.name+'<span class="chip-pts">+'+svc.points+' pt'+(svc.points>1?'s':'')+'</span>';b.onclick=function(){document.querySelectorAll('.service-chip').forEach(function(x){x.classList.remove('selected')});b.classList.add('selected');selSvc=key;$('scanBtn').disabled=!scanM};g.appendChild(b)})(k,svcs[k])}}
+async function loadRws(){rws=await A('/api/rewards')}
+
+$('scanInput').addEventListener('keydown',function(e){if(e.key==='Enter'){var v=e.target.value.trim();if(v)lkScan(v)}});
+async function lkScan(id){try{var m=await A('/api/members/'+encodeURIComponent(id));scanM=m;$('sMN').textContent=m.full_name;$('sMI').textContent=m.member_id;$('sPt').textContent=m.total_points-m.redeemed_points;$('sVi').textContent=m.visit_count;$('sTt').textContent=m.total_points;$('sMC').classList.add('show');$('scanBox').classList.add('active');$('scanBtn').disabled=!selSvc}catch(e){toast(e.message,'error');scanM=null;$('sMC').classList.remove('show')}}
+async function submitScan(){if(!scanM||!selSvc)return;try{var r=await A('/api/scan',{method:'POST',body:{member_id:scanM.member_id,service_type:selSvc}});toast('+'+r.points_earned+' pt'+(r.points_earned>1?'s':'')+' for '+r.member_name);$('sPt').textContent=r.available_points;$('sTt').textContent=r.total_points;$('sVi').textContent=parseInt($('sVi').textContent)+1;$('scanBox').classList.add('done');setTimeout(function(){$('scanBox').classList.remove('done')},2000);$('scanInput').value='';document.querySelectorAll('.service-chip').forEach(function(b){b.classList.remove('selected')});selSvc=null}catch(e){toast(e.message,'error')}}
+
+async function regMember(){var n=$('regName').value.trim(),p=$('regPhone').value.trim().replace(/[\s\-]/g,'');if(!n){toast('Enter name','error');return}if(!p){toast('Phone is required','error');return}if(!/^09\d{8}$/.test(p)){toast('Valid Libyan number required (10 digits, starts with 09)','error');return}try{var r=await A('/api/members',{method:'POST',body:{full_name:n,phone:p}});toast(r.full_name+' registered as '+r.member_id);var pd=await A('/api/print-card/'+r.member_id);showPP(pd)}catch(e){toast(e.message,'error')}}
+
+function showPP(d){$('regResult').style.display='block';
+var c=d.config||{business:CFG.business,card:CFG.card,branding:CFG.branding};
+var b=c.business;var bt=c.card.back_text_ar.replace(/\n/g,'<br>');
+var pin='<svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>';
+var fb='<svg viewBox="0 0 24 24" fill="rgba(255,255,255,0.7)"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>';
+$('printPrev').innerHTML='<div class="card-preview-wrap"><div><div class="card-preview-label">Front</div><div class="loyalty-card"><div class="lc-front"><div class="lc-top"><div><div class="lc-tag">LOYALTY PROGRAM</div><div class="lc-brand">'+b.tagline+'</div><div class="lc-brand-ar">'+b.tagline_ar+'</div></div><div class="lc-logo"><img src="/logo.jpg"></div></div><div><div class="lc-name">'+d.full_name+'</div><div class="lc-bottom"><div class="lc-qr"><img src="/api/qrcode/'+d.member_id+'"></div><div><div class="lc-id">'+d.member_id+'</div></div></div></div></div></div></div><div><div class="card-preview-label">Back</div><div class="loyalty-card"><div class="lc-back"><div class="lc-back-text">'+bt+'</div><div class="lc-back-info"><div class="lc-back-row">'+pin+' '+b.location+'</div><div class="lc-back-row">'+fb+' '+b.facebook+'</div></div><div class="lc-back-brand">'+b.name.toUpperCase()+'</div></div></div></div></div>';window._pd=d}
+
+function printCard(){var d=window._pd;if(!d)return;
+var c=d.config||{business:CFG.business,card:CFG.card,branding:CFG.branding};
+var b=c.business;var br=c.branding;var bt=c.card.back_text_ar.replace(/\n/g,'<br>');
+var w=window.open('','_blank','width=800,height=500');w.document.write('<html><head><title>Print - '+d.member_id+'</title><link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800&display=swap" rel="stylesheet"><style>@page{size:85.6mm 53.98mm;margin:0}*{margin:0;padding:0;box-sizing:border-box}body{font-family:Outfit,sans-serif}.card{width:85.6mm;height:53.98mm;overflow:hidden;page-break-after:always}.front{background:'+br.card_gradient+';padding:4.5mm 5.5mm;display:flex;flex-direction:column;justify-content:space-between;color:#fff;height:100%}.top{display:flex;justify-content:space-between;align-items:flex-start}.tag{font-size:5pt;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.45);font-weight:600}.brand{font-weight:700;font-size:9pt}.brand-ar{font-size:7pt;color:rgba(255,255,255,0.4)}.logo{width:13mm;height:13mm;position:relative}.logo img{width:12mm;height:12mm;object-fit:contain;opacity:0.85}.name{font-weight:600;font-size:10pt;margin-bottom:2.5mm}.bot{display:flex;align-items:flex-end;gap:3mm}.qr{width:12mm;height:12mm;background:#fff;border-radius:1.5mm;padding:1mm}.qr img{width:100%;height:100%}.bid{font-family:monospace;font-size:6.5pt;color:rgba(255,255,255,0.45);letter-spacing:1px}.back{background:'+br.card_back_gradient+';padding:5mm;display:flex;flex-direction:column;justify-content:space-between;height:100%;color:#fff}.btxt{font-size:6pt;color:rgba(255,255,255,0.4);text-align:center;line-height:1.7;direction:rtl}.binfo{display:flex;flex-direction:column;gap:1.5mm;align-items:center}.brow{display:flex;align-items:center;gap:1.5mm;font-size:6.5pt;color:rgba(255,255,255,0.65)}.brow svg{width:3mm;height:3mm}.bname{font-weight:700;font-size:7pt;text-align:center;color:rgba(255,255,255,0.25);letter-spacing:2px;margin-top:2mm}</style></head><body><div class="card front"><div class="top"><div><div class="tag">Loyalty Program</div><div class="brand">'+b.tagline+'</div><div class="brand-ar">'+b.tagline_ar+'</div></div><div class="logo"><img src="/logo.jpg"></div></div><div><div class="name">'+d.full_name+'</div><div class="bot"><div class="qr"><img src="/api/qrcode/'+d.member_id+'"></div><div class="bid">'+d.member_id+'</div></div></div></div><div class="card back"><div class="btxt">'+bt+'</div><div class="binfo"><div class="brow"><svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg> '+b.location+'</div><div class="brow"><svg viewBox="0 0 24 24" fill="rgba(255,255,255,0.7)"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg> '+b.facebook+'</div></div><div class="bname">'+b.name.toUpperCase()+'</div></div><script>setTimeout(function(){window.print()},600)<\/script></body></html>')}
+
+function resetReg(){$('regName').value='';$('regPhone').value='';$('regResult').style.display='none';$('regName').focus()}
+
+async function loadMbrs(s){var u=s?'/api/members?search='+encodeURIComponent(s):'/api/members';var m=await A(u);$('mCount').textContent=m.length+' member'+(m.length!==1?'s':'');$('mTbl').innerHTML=m.map(function(x){var a=x.total_points-x.redeemed_points;var lv=x.last_visit?new Date(x.last_visit).toLocaleDateString():'—';return'<tr><td><span style="font-family:var(--font-mono);font-size:12px">'+x.member_id+'</span></td><td><strong>'+x.full_name+'</strong></td><td>'+x.phone+'</td><td><strong style="color:var(--brand-400)">'+a+'</strong> <span style="color:var(--text-tertiary);font-size:11px">('+x.total_points+')</span></td><td>'+x.visit_count+'</td><td>'+lv+'</td><td><button class="btn btn-ghost btn-sm" onclick="viewM(\''+x.member_id+'\')">View</button></td></tr>'}).join('')}
+var sT;function searchM(){clearTimeout(sT);sT=setTimeout(function(){loadMbrs($('mSearch').value.trim())},300)}
+
+async function viewM(id){var m=await A('/api/members/'+id);var a=m.total_points-m.redeemed_points;$('dTitle').textContent=m.full_name;$('dContent').innerHTML='<div style="font-family:var(--font-mono);font-size:12px;color:var(--text-tertiary);margin-bottom:var(--sp-3)">'+m.member_id+'</div><div class="member-stats" style="margin-bottom:var(--sp-4)"><div class="member-stat"><div class="member-stat-value">'+a+'</div><div class="member-stat-label">Available</div></div><div class="member-stat"><div class="member-stat-value">'+m.total_points+'</div><div class="member-stat-label">Total</div></div><div class="member-stat"><div class="member-stat-value">'+m.visit_count+'</div><div class="member-stat-label">Visits</div></div></div><div style="text-align:center;margin:var(--sp-3) 0"><img src="/api/qrcode/'+m.member_id+'" style="width:120px;height:120px"><div style="font-family:var(--font-mono);font-size:11px;color:var(--text-tertiary);margin-top:var(--sp-2)">'+m.member_id+'</div></div>'+(m.scans.length>0?'<div style="font-size:13px;font-weight:600;margin:var(--sp-3) 0 var(--sp-2)">Recent scans</div>'+m.scans.slice(0,8).map(function(s){return'<div style="display:flex;justify-content:space-between;padding:6px 0;font-size:12px;border-bottom:1px solid var(--border-subtle)"><span>'+(svcs[s.service_type]?svcs[s.service_type].name:s.service_type)+'</span><span style="color:var(--success);font-family:var(--font-mono)">+'+s.points_earned+'</span><span style="color:var(--text-tertiary)">'+new Date(s.created_at).toLocaleDateString()+'</span></div>'}).join(''):'');
+$('dPrint').onclick=async function(){var pd=await A('/api/print-card/'+id);window._pd=pd;printCard()};
+$('dDel').onclick=async function(){if(!confirm('Delete '+m.full_name+'? All data will be removed.'))return;try{await A('/api/members/'+id,{method:'DELETE'});toast(m.full_name+' deleted');closeModal('detailModal');loadMbrs()}catch(e){toast(e.message,'error')}};
+showModal('detailModal')}
+
+$('rdInput').addEventListener('keydown',function(e){if(e.key==='Enter'){var v=e.target.value.trim();if(v)lkRd(v)}});
+async function lkRd(id){try{var m=await A('/api/members/'+encodeURIComponent(id));rdM=m;var a=m.total_points-m.redeemed_points;$('rMN').textContent=m.full_name;$('rMI').textContent=m.member_id;$('rPt').textContent=a;$('rTt').textContent=m.total_points;$('rSp').textContent=m.redeemed_points;$('rMC').classList.add('show');rnRw(a)}catch(e){toast(e.message,'error')}}
+function rnRw(pts){var g=$('rwGrid');g.innerHTML='';for(var k in rws){(function(key,rw){var ok=pts>=rw.points;var b=document.createElement('div');b.className='reward-card'+(ok?'':' disabled');b.innerHTML='<div class="reward-pts">'+rw.points+' <small>pts</small></div><div class="reward-name">'+rw.name+'</div>';if(ok)b.onclick=function(){rdRw(key)};g.appendChild(b)})(k,rws[k])}}
+async function rdRw(k){if(!rdM)return;if(!confirm('Redeem "'+rws[k].name+'" for '+rws[k].points+' points?'))return;try{var r=await A('/api/redeem',{method:'POST',body:{member_id:rdM.member_id,reward_key:k}});toast(r.reward+' redeemed! '+r.remaining_points+' pts left');$('rPt').textContent=r.remaining_points;$('rSp').textContent=parseInt($('rSp').textContent)+r.points_spent;rnRw(r.remaining_points)}catch(e){toast(e.message,'error')}}
+
+async function loadStaff(){var s=await A('/api/staff');$('stTbl').innerHTML=s.map(function(x){return'<tr><td><span style="font-family:var(--font-mono)">'+x.username+'</span></td><td>'+x.full_name+'</td><td><span style="color:'+(x.role==='admin'?'var(--brand-400)':'var(--text-tertiary)')+';font-size:12px;font-weight:600">'+x.role+'</span></td><td style="font-size:12px;color:var(--text-tertiary)">'+new Date(x.created_at).toLocaleDateString()+'</td><td style="display:flex;gap:6px">'+(x.role!=='admin'?'<button class="btn btn-ghost btn-sm" onclick="resetStaffPw('+x.id+',\''+x.full_name+'\')">Reset PW</button><button class="btn btn-danger btn-sm" onclick="rmStaff('+x.id+')">Remove</button>':'<button class="btn btn-ghost btn-sm" onclick="resetStaffPw('+x.id+',\''+x.full_name+'\')">Reset PW</button>')+'</td></tr>'}).join('')}
+async function addStaff(){var f=$('stFN').value.trim(),u=$('stUN').value.trim(),p=$('stPW').value;if(!f||!u||!p){toast('All fields required','error');return}try{await A('/api/staff',{method:'POST',body:{full_name:f,username:u,password:p}});toast('Account created');closeModal('addStaffModal');$('stFN').value='';$('stUN').value='';$('stPW').value='';loadStaff()}catch(e){toast(e.message,'error')}}
+async function rmStaff(id){if(!confirm('Remove this account?'))return;await A('/api/staff/'+id,{method:'DELETE'});toast('Removed','info');loadStaff()}
+async function resetStaffPw(id,name){var pw=prompt('New password for '+name+':');if(!pw)return;if(pw.length<4){toast('Min 4 characters','error');return}try{await A('/api/staff/'+id+'/reset-password',{method:'POST',body:{new_password:pw}});toast('Password reset for '+name)}catch(e){toast(e.message,'error')}}
+
+async function loadStats(){try{var s=await A('/api/stats');$('sM').textContent=s.total_members;$('sS').textContent=s.today_scans;$('sN').textContent=s.today_new_members;$('sR').textContent=s.today_redemptions;$('sRt').textContent=s.return_rate+'%';var c=$('rAct');if(s.recent_activity.length===0){c.innerHTML='<div style="color:var(--text-tertiary);font-size:13px;padding:var(--sp-3)">No activity yet.</div>';return}c.innerHTML=s.recent_activity.map(function(a){var sv=svcs[a.service_type];var nm=sv?sv.name:a.service_type;return'<div class="feed-item"><div class="feed-dot dot-'+a.service_type+'"></div><div class="feed-info"><div class="feed-name">'+a.member_name+'</div><div class="feed-detail">'+nm+' — '+tAgo(new Date(a.created_at))+'</div></div><div class="feed-pts">+'+a.points_earned+'</div></div>'}).join('')}catch(e){}}
+function tAgo(d){var s=Math.floor((new Date()-d)/1000);if(s<60)return'just now';if(s<3600)return Math.floor(s/60)+'m ago';if(s<86400)return Math.floor(s/3600)+'h ago';return Math.floor(s/86400)+'d ago'}
+
+function openFlag(){$('flagCat').value='';$('flagComment').value='';showModal('flagModal')}
+async function submitFlag(){var cat=$('flagCat').value;var com=$('flagComment').value.trim();if(!cat){toast('Select a category','error');return}if(!com){toast('Describe the issue','error');return}try{await A('/api/flags',{method:'POST',body:{category:cat,comment:com,page:currentPage}});toast('Flag submitted','info');closeModal('flagModal');updateFlagBadge()}catch(e){toast(e.message,'error')}}
+async function updateFlagBadge(){try{var r=await A('/api/flags/count');var b=$('flagBadge');if(r.count>0){b.textContent=r.count;b.style.display='inline'}else{b.style.display='none'}}catch(e){}}
+async function loadFlags(){try{var flags=await A('/api/flags');var c=$('flagsList');if(flags.length===0){c.innerHTML='<div class="card" style="text-align:center;color:var(--text-tertiary)">No flags. Everything running smoothly.</div>';return}c.innerHTML=flags.map(function(f){var isOpen=f.status==='open';var colors={'Scanner Issue':'#60A5FA','Printer Issue':'#FBBF24','Customer Dispute':'#A78BFA','System Error':'#F87171','Other':'var(--text-secondary)'};var color=colors[f.category]||'var(--text-secondary)';return'<div class="flag-item'+(isOpen?'':' resolved')+'"><div class="flag-header"><div><span class="flag-cat" style="color:'+color+'">'+f.category+'</span><span style="font-size:11px;color:var(--text-tertiary);margin-left:8px">from '+f.page+'</span></div><span class="flag-status '+(isOpen?'open':'resolved')+'">'+f.status+'</span></div><div class="flag-comment">'+f.comment+'</div><div class="flag-meta">'+f.raised_by+' — '+new Date(f.created_at).toLocaleString()+'</div>'+(f.resolve_note?'<div class="flag-resolve-note">Resolved by '+f.resolved_by+': '+f.resolve_note+'</div>':'')+(isOpen&&cu&&cu.role==='admin'?'<button class="btn btn-ghost btn-sm" style="margin-top:var(--sp-2)" onclick="resolveFlag('+f.id+')">Resolve</button>':'')+'</div>'}).join('')}catch(e){}}
+var resolvingFlagId=null;
+function resolveFlag(id){resolvingFlagId=id;$('resolveNote').value='';showModal('resolveModal')}
+async function confirmResolve(){if(!resolvingFlagId)return;try{await A('/api/flags/'+resolvingFlagId+'/resolve',{method:'POST',body:{note:$('resolveNote').value.trim()}});toast('Flag resolved');closeModal('resolveModal');loadFlags();updateFlagBadge()}catch(e){toast(e.message,'error')}}
+
+$('loginPass').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin()});
+$('loginUser').addEventListener('keydown',function(e){if(e.key==='Enter')$('loginPass').focus()});
+checkAuth();
+setInterval(updateFlagBadge,30000);
+</script>
+</body></html>
