@@ -14,14 +14,14 @@
     "back_text_ar": "بطاقة ولاء مقهى المشتل تمنحك نقاطاً مع كل طلب. اجمع النقاط واستبدلها بقهوة مجانية أو حلويات."
   },
   "branding": {
-    "primary_900": "#0D3A20",
+    "primary_900": "#FBFFF9",
     "primary_800": "#14532D",
     "primary_700": "#166534",
     "primary_600": "#15803D",
     "primary_500": "#16a34a",
     "primary_400": "#22c55e",
     "primary_100": "#dcfce7",
-    "primary_50: "#FBFFF9",
+    "primary_50 ": "#FBFFF9",
     "card_gradient": "linear-gradient(135deg, #0D3A20, #22c55e)",
     "card_back_gradient": "linear-gradient(135deg, #052c16, #0D3A20)"
   },
