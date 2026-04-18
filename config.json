@@ -21,7 +21,7 @@
     "primary_500": "#16a34a",
     "primary_400": "#22c55e",
     "primary_100": "#dcfce7",
-    "primary_50: "#f0fdf4",
+    "primary_50: "#FBFFF9",
     "card_gradient": "linear-gradient(135deg, #0D3A20, #22c55e)",
     "card_back_gradient": "linear-gradient(135deg, #052c16, #0D3A20)"
   },
